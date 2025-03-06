@@ -17,12 +17,15 @@ import {
   AppBar,
   Toolbar,
   MenuItem,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Visibility as VisibilityIcon, Store as StoreIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useMenu } from '../contexts/MenuContext';
 import { useTitle } from '../contexts/TitleContext';
 import { useTaxTip } from '../contexts/TaxTipContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -30,6 +33,7 @@ const AdminDashboard = () => {
   const { menuItems, categories, addMenuItem, updateMenuItem, deleteMenuItem } = useMenu();
   const { storeName, updateStoreName, updateTitle } = useTitle();
   const { salesTax, defaultTipOptions, updateSalesTax, updateTipOptions } = useTaxTip();
+  const { themeColors, updateTheme } = useTheme();
 
   // Update page title when component mounts
   useEffect(() => {
@@ -40,6 +44,11 @@ const AdminDashboard = () => {
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [newTipOption, setNewTipOption] = useState('');
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'info'
+  });
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -163,12 +172,23 @@ const AdminDashboard = () => {
                     if (newTipOption && !isNaN(parseFloat(newTipOption))) {
                       const tipValue = parseFloat(newTipOption);
                       if (tipValue >= 0 && tipValue <= 100) {
-                        updateTipOptions([...defaultTipOptions, tipValue].sort((a, b) => a - b));
-                        setNewTipOption('');
+                        if (!defaultTipOptions.includes(tipValue)) {
+                          updateTipOptions([...defaultTipOptions, tipValue].sort((a, b) => a - b));
+                          setNewTipOption('');
+                        } else {
+                          // Optional: You could add a snackbar/alert here to inform the user
+                          setSnackbar({
+                            open: true,
+                            message: 'This tip percentage already exists!',
+                            severity: 'warning'
+                          });
+                        }
                       }
                     }
                   }}
-                  disabled={!newTipOption || isNaN(parseFloat(newTipOption))}
+                  disabled={!newTipOption || 
+                    isNaN(parseFloat(newTipOption)) || 
+                    defaultTipOptions.includes(parseFloat(newTipOption))}
                 >
                   Add
                 </Button>
@@ -187,6 +207,78 @@ const AdminDashboard = () => {
                     {tip}%
                   </Button>
                 ))}
+              </Box>
+
+              <Typography variant="h6" sx={{ mt: 4, mb: 2 }}>Theme Settings</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                <TextField
+                  label="Primary Color"
+                  value={themeColors.primaryColor}
+                  onChange={(e) => updateTheme({ ...themeColors, primaryColor: e.target.value })}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: 150 }}
+                  type="color"
+                />
+                <TextField
+                  label="Secondary Color"
+                  value={themeColors.secondaryColor}
+                  onChange={(e) => updateTheme({ ...themeColors, secondaryColor: e.target.value })}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: 150 }}
+                  type="color"
+                />
+                <TextField
+                  label="Background Color"
+                  value={themeColors.backgroundColor}
+                  onChange={(e) => updateTheme({ ...themeColors, backgroundColor: e.target.value })}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: 150 }}
+                  type="color"
+                />
+                <TextField
+                  label="Card Background"
+                  value={themeColors.cardBackground}
+                  onChange={(e) => updateTheme({ ...themeColors, cardBackground: e.target.value })}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: 150 }}
+                  type="color"
+                />
+                <TextField
+                  label="Text Color"
+                  value={themeColors.textColor}
+                  onChange={(e) => updateTheme({ ...themeColors, textColor: e.target.value })}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: 150 }}
+                  type="color"
+                />
+                <TextField
+                  label="Secondary Text"
+                  value={themeColors.secondaryTextColor}
+                  onChange={(e) => updateTheme({ ...themeColors, secondaryTextColor: e.target.value })}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: 150 }}
+                  type="color"
+                />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => updateTheme({
+                    primaryColor: '#1976d2',
+                    secondaryColor: '#dc004e',
+                    backgroundColor: '#f5f5f5',
+                    cardBackground: '#ffffff',
+                    textColor: '#000000',
+                    secondaryTextColor: '#666666'
+                  })}
+                >
+                  Reset to Default
+                </Button>
               </Box>
             </Box>
           </Box>
@@ -313,6 +405,19 @@ const AdminDashboard = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={3000} 
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
+        <Alert 
+          onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { Box } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CartProvider } from './contexts/CartContext';
@@ -13,23 +14,22 @@ import StoreFront from './pages/StoreFront';
 import Login from './pages/Login';
 import Navigation from './components/Navigation';
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
-
 function App() {
   return (
     <Router>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </Router>
+  );
+}
+
+function AppContent() {
+  const { muiTheme } = useTheme();
+  
+  return (
+    <MuiThemeProvider theme={muiTheme}>
+      <CssBaseline />
         <AuthProvider>
           <TitleProvider>
             <TaxTipProvider>
@@ -50,8 +50,7 @@ function App() {
             </TaxTipProvider>
           </TitleProvider>
         </AuthProvider>
-      </ThemeProvider>
-    </Router>
+    </MuiThemeProvider>
   );
 }
 
