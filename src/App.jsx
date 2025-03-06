@@ -6,6 +6,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { CartProvider } from './contexts/CartContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { MenuProvider } from './contexts/MenuContext';
+import { TitleProvider } from './contexts/TitleContext';
+import { TaxTipProvider } from './contexts/TaxTipContext';
 import AdminDashboard from './pages/AdminDashboard';
 import StoreFront from './pages/StoreFront';
 import Login from './pages/Login';
@@ -29,8 +31,10 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <AuthProvider>
-          <MenuProvider>
-            <CartProvider>
+          <TitleProvider>
+            <TaxTipProvider>
+              <MenuProvider>
+                <CartProvider>
             <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', minWidth:'100vw' }}>
               <Navigation />
               <Box sx={{ flex: 1 }}>
@@ -41,8 +45,10 @@ function App() {
                 </Routes>
               </Box>
             </Box>
-            </CartProvider>
-          </MenuProvider>
+                </CartProvider>
+              </MenuProvider>
+            </TaxTipProvider>
+          </TitleProvider>
         </AuthProvider>
       </ThemeProvider>
     </Router>

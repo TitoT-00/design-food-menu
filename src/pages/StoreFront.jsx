@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import {
   Container,
@@ -14,10 +14,14 @@ import {
   AppBar,
   Toolbar,
   Badge,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import { Add as AddIcon, Remove as RemoveIcon, ShoppingCart as ShoppingCartIcon, Store as StoreIcon } from '@mui/icons-material';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useTitle } from '../contexts/TitleContext';
+import { useTaxTip } from '../contexts/TaxTipContext';
 import { useMenu } from '../contexts/MenuContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,6 +29,15 @@ const StoreFront = () => {
   const navigate = useNavigate();
   const { isAdmin, logout } = useAuth();
   const { menuItems, categories } = useMenu();
+  const { storeName, updateTitle } = useTitle();
+  const { salesTax, defaultTipOptions } = useTaxTip();
+  const [selectedTip, setSelectedTip] = useState(defaultTipOptions[1]); // Default to middle option
+  const [customTip, setCustomTip] = useState('');
+
+  // Update page title when component mounts
+  useEffect(() => {
+    updateTitle(storeName);
+  }, [storeName]);
   const { cart, addItem, removeItem, updateQuantity, getTotal } = useCart();
 
   const handleDragEnd = (result) => {
@@ -190,51 +203,104 @@ const StoreFront = () => {
               <Typography variant="h5" gutterBottom sx={{ borderBottom: '2px solid #1976d2', pb: 1, mb: 3 }}>
                 Shopping Cart
               </Typography>
-              <Droppable droppableId="cart">
-                {(provided) => (
-                  <Box
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    sx={{ minHeight: 200, mb: 3 }}
-                  >
-                    {cart.items.map((item) => (
-                      <Box key={item.id} sx={{ mb: 2 }}>
-                        <Box display="flex" alignItems="center" justifyContent="space-between">
-                          <Typography variant="subtitle1">
-                            {item.name}
-                          </Typography>
-                          <Box display="flex" alignItems="center">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleQuantityChange(item.id, item.quantity, -1)}
-                            >
-                              <RemoveIcon />
-                            </IconButton>
-                            <Typography sx={{ mx: 1 }}>
-                              {item.quantity}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleQuantityChange(item.id, item.quantity, 1)}
-                            >
-                              <AddIcon />
-                            </IconButton>
-                          </Box>
-                        </Box>
-                        <Typography color="textSecondary">
-                          ${(item.price * item.quantity).toFixed(2)}
+              <Box sx={{ minHeight: 200, mb: 3 }}>
+                {cart.items.map((item) => (
+                  <Box key={item.id} sx={{ mb: 2 }}>
+                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                      <Typography variant="subtitle1">
+                        {item.name}
+                      </Typography>
+                      <Box display="flex" alignItems="center">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleQuantityChange(item.id, item.quantity, -1)}
+                        >
+                          <RemoveIcon />
+                        </IconButton>
+                        <Typography sx={{ mx: 1 }}>
+                          {item.quantity}
                         </Typography>
-                        <Divider sx={{ my: 1 }} />
+                        <IconButton
+                          size="small"
+                          onClick={() => handleQuantityChange(item.id, item.quantity, 1)}
+                        >
+                          <AddIcon />
+                        </IconButton>
                       </Box>
-                    ))}
-                    {provided.placeholder}
+                    </Box>
+                    <Typography color="textSecondary">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </Typography>
+                    <Divider sx={{ my: 1 }} />
                   </Box>
-                )}
-              </Droppable>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6">
-                Total: ${getTotal().toFixed(2)}
-              </Typography>
+                ))}
+              </Box>
+
+              <Box sx={{ mt: 3, borderTop: '1px solid rgba(0, 0, 0, 0.12)', pt: 2 }}>
+                <Typography variant="body1" sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <span>Subtotal:</span>
+                  <span>${getTotal().toFixed(2)}</span>
+                </Typography>
+                
+                <Typography variant="body1" sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <span>Tax ({salesTax}%):</span>
+                  <span>${(getTotal() * (salesTax / 100)).toFixed(2)}</span>
+                </Typography>
+
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body1" gutterBottom>Tip:</Typography>
+                  <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                    {defaultTipOptions.map((tip) => (
+                      <Button
+                        key={tip}
+                        variant={selectedTip === tip ? 'contained' : 'outlined'}
+                        size="small"
+                        onClick={() => {
+                          setSelectedTip(tip);
+                          setCustomTip('');
+                        }}
+                      >
+                        {tip}%
+                      </Button>
+                    ))}
+                    <Button
+                      variant={customTip !== '' ? 'contained' : 'outlined'}
+                      size="small"
+                      onClick={() => {
+                        setSelectedTip(null);
+                        setCustomTip(customTip || '0');
+                      }}
+                    >
+                      Custom
+                    </Button>
+                  </Box>
+                  {customTip !== '' && (
+                    <TextField
+                      size="small"
+                      type="number"
+                      value={customTip}
+                      onChange={(e) => setCustomTip(e.target.value)}
+                      InputProps={{
+                        endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                      }}
+                      sx={{ width: 100 }}
+                    />
+                  )}
+                </Box>
+
+                <Typography variant="body1" sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <span>Tip ({customTip !== '' ? customTip : selectedTip}%):</span>
+                  <span>${(getTotal() * ((customTip !== '' ? parseFloat(customTip) : selectedTip) / 100)).toFixed(2)}</span>
+                </Typography>
+
+                <Typography variant="h6" sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, borderTop: '2px solid rgba(0, 0, 0, 0.12)', pt: 2 }}>
+                  <span>Total:</span>
+                  <span>
+                    ${(getTotal() * (1 + salesTax / 100 + (customTip !== '' ? parseFloat(customTip) : selectedTip) / 100)).toFixed(2)}
+                  </span>
+                </Typography>
+              </Box>
+
               <Button
                 variant="contained"
                 fullWidth

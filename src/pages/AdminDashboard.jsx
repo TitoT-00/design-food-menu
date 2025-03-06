@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -21,14 +21,25 @@ import {
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon, Visibility as VisibilityIcon, Store as StoreIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useMenu } from '../contexts/MenuContext';
+import { useTitle } from '../contexts/TitleContext';
+import { useTaxTip } from '../contexts/TaxTipContext';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { menuItems, categories, addMenuItem, updateMenuItem, deleteMenuItem } = useMenu();
+  const { storeName, updateStoreName, updateTitle } = useTitle();
+  const { salesTax, defaultTipOptions, updateSalesTax, updateTipOptions } = useTaxTip();
+
+  // Update page title when component mounts
+  useEffect(() => {
+    updateTitle(`${storeName} - Admin Dashboard`);
+    return () => updateTitle(storeName);
+  }, [storeName]);
 
   const [open, setOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
+  const [newTipOption, setNewTipOption] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -103,9 +114,82 @@ const AdminDashboard = () => {
 
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-          <Typography variant="h4" component="h1">
-            Menu Management
-          </Typography>
+          <Box>
+            <Typography variant="h4" component="h1" gutterBottom>
+              Menu Management
+            </Typography>
+            <TextField
+              label="Store Name"
+              value={storeName}
+              onChange={(e) => updateStoreName(e.target.value)}
+              variant="outlined"
+              size="small"
+              sx={{ width: 300 }}
+            />
+            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+              <TextField
+                label="Sales Tax (%)"
+                type="number"
+                value={salesTax}
+                onChange={(e) => updateSalesTax(e.target.value)}
+                variant="outlined"
+                size="small"
+                sx={{ width: 150 }}
+                inputProps={{ 
+                  step: 0.001,
+                  min: 0,
+                  max: 100
+                }}
+              />
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                <TextField
+                  label="New Tip Option (%)"
+                  value={newTipOption}
+                  onChange={(e) => setNewTipOption(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                  type="number"
+                  inputProps={{
+                    min: 0,
+                    max: 100,
+                    step: 1
+                  }}
+                  sx={{ width: 150 }}
+                />
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => {
+                    if (newTipOption && !isNaN(parseFloat(newTipOption))) {
+                      const tipValue = parseFloat(newTipOption);
+                      if (tipValue >= 0 && tipValue <= 100) {
+                        updateTipOptions([...defaultTipOptions, tipValue].sort((a, b) => a - b));
+                        setNewTipOption('');
+                      }
+                    }
+                  }}
+                  disabled={!newTipOption || isNaN(parseFloat(newTipOption))}
+                >
+                  Add
+                </Button>
+              </Box>
+              <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {defaultTipOptions.map((tip) => (
+                  <Button
+                    key={tip}
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      updateTipOptions(defaultTipOptions.filter(t => t !== tip));
+                    }}
+                    endIcon={<DeleteIcon />}
+                  >
+                    {tip}%
+                  </Button>
+                ))}
+              </Box>
+            </Box>
+          </Box>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
