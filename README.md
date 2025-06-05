@@ -1,12 +1,56 @@
-# React + Vite
+# Food Menu Designer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive web application for restaurant menu management and ordering system built with React and Material-UI.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Admin Dashboard**: Manage menu items, categories, and restaurant settings
+- **Store Front**: User-friendly interface for customers to browse and order food
+- **Shopping Cart**: Real-time cart management with tax and tip calculations
+- **Authentication**: Secure login system for admin and customer access
+- **Theme Support**: Customizable UI with light/dark mode support
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend**: React 18 with Vite
+- **UI Framework**: Material-UI (MUI) v6
+- **Routing**: React Router v7
+- **State Management**: React Context API
+- **Drag & Drop**: React Beautiful DND
+- **Additional Features**:
+  - OpenAI integration
+  - Sound effects support
+  - UUID for unique identifiers
+
+## Getting Started
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start development server:
+   ```bash
+   npm run dev
+   ```
+
+3. Build for production:
+   ```bash
+   npm run build
+   ```
+
+## Project Structure
+
+- `/src`
+  - `/components`: Reusable UI components
+  - `/contexts`: React Context providers for state management
+  - `/pages`: Main application pages (Admin, Store, Login)
+  - `/assets`: Static resources
+
+## Environment Variables
+
+Create a `.env` file in the root directory with necessary configuration:
+
+```env
+# Add your environment variables here
+```
